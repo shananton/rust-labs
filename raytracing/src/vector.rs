@@ -47,9 +47,6 @@ impl Vec3f {
     pub fn normalized(self) -> Self {
         self / self.norm()
     }
-    pub fn reflected(self, unit_normal: Vec3f) -> Self {
-        2.0 * self.dot(unit_normal) * unit_normal - self
-    }
 }
 
 impl Neg for Vec3f {

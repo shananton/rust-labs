@@ -3,15 +3,21 @@ use crate::vector::{Vec3f, Float};
 pub struct Material {
     diffuse_color: Vec3f,
     specular_exponent: Float,
-    diffuse_weight: Float,
-    specular_weight: Float,
+    refractive_index: Float,
+    albedo: Albedo,
+}
+
+pub struct Albedo {
+    pub diffuse: Float,
+    pub specular: Float,
+    pub reflect: Float,
+    pub refract: Float,
 }
 
 impl Material {
-    pub const fn new(diffuse_color: Vec3f, specular_exponent: Float,
-                     diffuse_weight: Float, specular_weight: Float) -> Self {
+    pub const fn new(diffuse_color: Vec3f, specular_exponent: Float, refractive_index: Float, albedo: Albedo) -> Self {
         Self {
-            diffuse_color, specular_exponent, diffuse_weight, specular_weight
+            diffuse_color, specular_exponent, refractive_index, albedo
         }
     }
 
@@ -23,11 +29,23 @@ impl Material {
         self.specular_exponent
     }
 
+    pub fn refractive_index(&self) -> Float {
+        self.refractive_index
+    }
+
     pub fn diffuse_weight(&self) -> Float {
-        self.diffuse_weight
+        self.albedo.diffuse
     }
 
     pub fn specular_weight(&self) -> Float {
-        self.specular_weight
+        self.albedo.specular
+    }
+
+    pub fn reflect_weight(&self) -> Float {
+        self.albedo.reflect
+    }
+
+    pub fn refract_weight(&self) -> Float {
+        self.albedo.refract
     }
 }

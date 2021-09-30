@@ -2,32 +2,39 @@ use image::{ImageBuffer, Rgb};
 use raytracing::geometry::Sphere;
 use raytracing::pixmap::Pixmap;
 use raytracing::render::scene::camera::Camera;
-use raytracing::render::object::{Ball, Material};
+use raytracing::render::object::{Ball, Material, Albedo};
 use raytracing::vector::Vec3f;
 use raytracing::render::scene::Scene;
 use raytracing::render::scene::light::Light;
 
-static IVORY: Material = Material::new(Vec3f::new(0.4, 0.4, 0.3), 50.0, 0.6, 0.3);
-static RED_RUBBER: Material = Material::new(Vec3f::new(0.3, 0.1, 0.1), 10.0, 0.9, 0.1);
+static IVORY: Material = Material::new(Vec3f::new(0.4, 0.4, 0.3), 50.0, 1.0,
+                                       Albedo { diffuse: 0.6, specular: 0.3, reflect: 0.1, refract: 0.0 });
+static GLASS: Material = Material::new(Vec3f::new(0.6, 0.7, 0.8), 125.0, 1.5,
+                                       Albedo { diffuse: 0.0, specular: 0.5, reflect: 0.1, refract: 0.8 });
+static RED_RUBBER: Material = Material::new(Vec3f::new(0.3, 0.1, 0.1), 10.0, 1.0,
+                                            Albedo { diffuse: 0.9, specular: 0.1, reflect: 0.0, refract: 0.0 });
+static MIRROR: Material = Material::new(Vec3f::new(1.0, 1.0, 1.0), 1425.0, 1.0,
+                                        Albedo { diffuse: 0.0, specular: 10.0, reflect: 0.8, refract: 0.0 });
 
 fn main() {
     let balls = vec![
         Ball::new(Sphere::new(Vec3f::new(-3.0, 0.0, -16.0), 2.0), &IVORY),
-        Ball::new(Sphere::new(Vec3f::new(-1.0, -1.5, -12.0), 2.0), &RED_RUBBER),
+        Ball::new(Sphere::new(Vec3f::new(-1.0, -1.5, -12.0), 2.0), &GLASS),
         Ball::new(Sphere::new(Vec3f::new(1.5, -0.5, -18.0), 3.0), &RED_RUBBER),
-        Ball::new(Sphere::new(Vec3f::new(7.0, 5.0, -18.0), 4.0), &IVORY),
+        Ball::new(Sphere::new(Vec3f::new(7.0, 5.0, -18.0), 4.0), &MIRROR),
     ];
     let lights = vec![
         Light::new(Vec3f::new(-20.0, 20.0, 20.0), 1.5),
-        //Light::new(Vec3f::new(-1.0, -1.5, -12.0), 1.8),
-        //Light::new(Vec3f::new(30.0, 20.0, 30.0), 1.7),
+        Light::new(Vec3f::new(-30.0, -50.0, -25.0), 1.8),
+        Light::new(Vec3f::new(30.0, 20.0, 30.0), 1.7),
     ];
-    let (width, height) = (1920, 1080);
+
+    let (width, height) = (1024, 768);
     let vertical_fov = std::f32::consts::PI / 3.0;
     let camera = Camera::new(vertical_fov, width, height);
 
-    let background_color = Vec3f::new(0.7, 0.7, 0.7);
-    let mut scene = Scene::new(background_color, camera);
+    let background_color = Vec3f::new(0.2, 0.7, 0.8);
+    let mut scene = Scene::new(background_color, camera, 4);
     balls.into_iter().for_each(|b| scene.add_ball(b));
     lights.into_iter().for_each(|l| scene.add_light(l));
 

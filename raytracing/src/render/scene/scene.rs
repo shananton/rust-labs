@@ -1,5 +1,5 @@
 use super::{Camera, Light};
-use crate::render::object::{Ball, SceneObject, Material};
+use crate::render::object::{Ball, SceneObject};
 use crate::vector::{Vec3f, Float};
 use crate::geometry::{Ray, Shape};
 
@@ -9,15 +9,17 @@ pub struct Scene {
     lights: Vec<Light>,
     background_color: Vec3f,
     camera: Camera,
+    raycasting_recursion_depth: u32,
 }
 
 impl Scene {
-    pub fn new(background_color: Vec3f, camera: Camera) -> Self {
+    pub fn new(background_color: Vec3f, camera: Camera, raycasting_recursion_depth: u32) -> Self {
         Self {
             balls: Vec::new(),
             lights: Vec::new(),
             background_color,
             camera,
+            raycasting_recursion_depth,
         }
     }
 
@@ -31,23 +33,30 @@ impl Scene {
 
     pub fn get_color_of_pixel(&self, col: usize, row: usize) -> Vec3f {
         let cast_ray = self.camera.get_ray_for_pixel(col, row);
-        self.get_color_of_ray(&cast_ray)
+        self.get_color_of_ray(&cast_ray, self.raycasting_recursion_depth)
     }
 
-    fn calculate_color(&self, point: Vec3f, view_direction: Vec3f, surface_normal: Vec3f, material: &Material) -> Vec3f {
-        let unit_normal = surface_normal.normalized();
-        self.diffuse_light_intensity(point, unit_normal) * material.diffuse_weight() * material.diffuse_color() +
-            self.specular_light_intensity(point, unit_normal, view_direction, material.specular_exponent())
-                * material.specular_weight() * Vec3f::new(1.0, 1.0, 1.0)
-    }
-
-    fn get_color_of_ray(&self, ray: &Ray) -> Vec3f {
+    fn get_color_of_ray(&self, ray: &Ray, remaining_depth: u32) -> Vec3f {
+        if remaining_depth == 0 {
+            return self.background_color;
+        }
         match self.intersect_with_first_object(&ray) {
             None => { self.background_color }
             Some((dist, object)) => {
                 let material = object.material();
                 let intersection_point = ray.origin() + dist * ray.direction_normalized();
                 let unit_normal = object.normal_at(intersection_point).normalized();
+
+                let reflected_ray = Ray::new(intersection_point,
+                                             Self::reflect(ray.direction_normalized(), unit_normal));
+                let reflect_color = self.get_color_of_ray(&reflected_ray, remaining_depth - 1);
+                let refracted_ray =
+                    Self::refract(ray.direction_normalized(), unit_normal, 1.0 / material.refractive_index())
+                        .map(|dir| Ray::new(intersection_point, dir));
+                let refract_color = refracted_ray.map_or(Vec3f::ZERO, |ray| {
+                    self.get_color_of_ray(&ray, remaining_depth - 1)
+                });
+
 
                 let mut diffuse_light_intensity = 0.0;
                 let mut specular_light_intensity = 0.0;
@@ -56,14 +65,20 @@ impl Scene {
                     let light_dir_normalized =
                         (light.position() - intersection_point).normalized();
 
+                    if self.intersect_with_first_object(&Ray::new(intersection_point, light_dir_normalized)).is_some() {
+                        continue;
+                    }
+
                     diffuse_light_intensity += light.intensity() * light_dir_normalized.dot(unit_normal).max(0.0);
                     specular_light_intensity += light.intensity() *
-                        (-light_dir_normalized).reflected(unit_normal)
+                        Self::reflect(light_dir_normalized, unit_normal)
                             .dot(ray.direction_normalized()).max(0.0).powf(material.specular_exponent());
                 }
 
                 material.diffuse_weight() * diffuse_light_intensity * material.diffuse_color() +
-                    material.specular_weight() * specular_light_intensity * Vec3f::ONE
+                    material.specular_weight() * specular_light_intensity * Vec3f::ONE +
+                    material.reflect_weight() * reflect_color +
+                    material.refract_weight() * refract_color
             }
         }
     }
@@ -76,23 +91,16 @@ impl Scene {
             .map(|(c, b)| (c, b as &dyn SceneObject))
     }
 
-    fn diffuse_light_intensity(&self, point: Vec3f, unit_normal: Vec3f) -> Float {
-        self.lights.iter()
-            .map(|l| Scene::diffuse_single_light_intensity(l, point, unit_normal))
-            .sum()
+    fn reflect(v_normalized: Vec3f, unit_normal: Vec3f) -> Vec3f {
+        v_normalized - 2.0 * v_normalized.dot(unit_normal) * unit_normal
     }
 
-    fn specular_light_intensity(&self, point: Vec3f, unit_normal: Vec3f, view_direction: Vec3f, specular_exponent: Float) -> Float {
-        self.lights.iter()
-            .map(|l| Scene::specular_single_light_intensity(l, point, unit_normal, view_direction, specular_exponent))
-            .sum()
-    }
-
-    fn diffuse_single_light_intensity(light: &Light, point: Vec3f, unit_normal: Vec3f) -> Float {
-        light.intensity() * unit_normal.dot(light.position() - point).max(0.0)
-    }
-
-    fn specular_single_light_intensity(light: &Light, point: Vec3f, unit_normal: Vec3f, view_direction: Vec3f, specular_exponent: Float) -> Float {
-        light.intensity() * (point - light.position()).reflected(unit_normal).dot(view_direction).max(0.0).powf(specular_exponent)
+    fn refract(v_normalized: Vec3f, unit_normal: Vec3f, eta: Float) -> Option<Vec3f> {
+        let cos_i = -v_normalized.dot(unit_normal).clamp(-1.0, 1.0);
+        if cos_i < 0.0 {
+            return Self::refract(v_normalized, -unit_normal, 1.0 / eta);
+        }
+        let k = 1.0 - eta * eta * (1.0 - cos_i * cos_i);
+        if k < 0.0 { None } else { Some(eta * v_normalized + (eta * cos_i - k.sqrt()) * unit_normal) }
     }
 }

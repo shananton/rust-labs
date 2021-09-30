@@ -1,8 +1,6 @@
 use crate::geometry::Ray;
 use crate::vector::{Float, Vec3f};
 
-use super::Scene;
-
 // The camera is always located at 0, facing -Z
 pub struct Camera {
     half_width: Float,
