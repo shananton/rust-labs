@@ -2,6 +2,7 @@ use std::ops::{Add, Sub, Mul, Div, Neg};
 use std::fmt::{Display, Formatter};
 
 pub type Float = f32;
+pub const EPSILON: Float = 1e-3;
 
 #[derive(Copy, Clone, Default, Debug)]
 pub struct Vec3f {

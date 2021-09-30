@@ -1,4 +1,4 @@
-use crate::vector::{Float, Vec3f};
+use crate::vector::{EPSILON, Float, Vec3f};
 use super::{Ray, Shape};
 
 pub struct Sphere {
@@ -14,7 +14,6 @@ impl Sphere {
 
 impl Shape for Sphere {
     fn distance_to_intersection(&self, ray: &Ray) -> Option<Float> {
-        const EPSILON: Float = 1e-3;
         let orig_to_center = self.center - ray.origin();
         let ray_dir_normalized = ray.direction_normalized();
 

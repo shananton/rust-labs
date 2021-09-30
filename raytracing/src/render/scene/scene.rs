@@ -1,11 +1,12 @@
-use super::{Camera, Light};
-use crate::render::object::{Ball, SceneObject};
-use crate::vector::{Vec3f, Float};
-use crate::geometry::{Ray, Shape};
+use crate::geometry::Ray;
+use crate::render::object::{Ball, HorizontalCheckerboardFragment, SceneObject};
+use crate::vector::{Float, Vec3f};
 
+use super::{Camera, Light};
 
 pub struct Scene {
     balls: Vec<Ball>,
+    checkerboard_fragments: Vec<HorizontalCheckerboardFragment>,
     lights: Vec<Light>,
     background_color: Vec3f,
     camera: Camera,
@@ -16,6 +17,7 @@ impl Scene {
     pub fn new(background_color: Vec3f, camera: Camera, raycasting_recursion_depth: u32) -> Self {
         Self {
             balls: Vec::new(),
+            checkerboard_fragments: Vec::new(),
             lights: Vec::new(),
             background_color,
             camera,
@@ -25,6 +27,10 @@ impl Scene {
 
     pub fn add_ball(&mut self, ball: Ball) {
         self.balls.push(ball);
+    }
+
+    pub fn add_checkerboard_fragment(&mut self, fragment: HorizontalCheckerboardFragment) {
+        self.checkerboard_fragments.push(fragment);
     }
 
     pub fn add_light(&mut self, light: Light) {
@@ -84,11 +90,18 @@ impl Scene {
     }
 
     fn intersect_with_first_object(&self, ray: &Ray) -> Option<(Float, &dyn SceneObject)> {
-        self.balls.iter()
-            .filter_map(|b| b.distance_to_intersection(&ray)
-                .map(|c| (c, b)))
+        [
+            self.intersect_with_type(ray, self.balls.iter()),
+            self.intersect_with_type(ray, self.checkerboard_fragments.iter())
+        ].iter().filter_map(|opt| *opt)
             .min_by(|(c1, _), (c2, _)| c1.partial_cmp(c2).unwrap())
-            .map(|(c, b)| (c, b as &dyn SceneObject))
+    }
+
+    fn intersect_with_type<'a, T: 'a + SceneObject>(&self, ray: &Ray, obj_iter: impl Iterator<Item=&'a T>) -> Option<(Float, &'a dyn SceneObject)> {
+        obj_iter.filter_map(|b| b.distance_to_intersection(&ray)
+            .map(|c| (c, b)))
+            .min_by(|(c1, _), (c2, _)| c1.partial_cmp(c2).unwrap())
+            .map(|(c, o)| (c, o as &dyn SceneObject))
     }
 
     fn reflect(v_normalized: Vec3f, unit_normal: Vec3f) -> Vec3f {
