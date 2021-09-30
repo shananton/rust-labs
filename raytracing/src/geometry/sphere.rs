@@ -1,5 +1,5 @@
-use crate::vector::{EPSILON, Float, Vec3f};
 use super::{Ray, Shape};
+use crate::vector::{Float, Vec3f, EPSILON};
 
 pub struct Sphere {
     center: Vec3f,
@@ -22,8 +22,7 @@ impl Shape for Sphere {
 
         let dist_from_center_to_ray_squared =
             orig_to_center.norm_squared() - orig_to_p_dist * orig_to_p_dist;
-        let p_to_surf_dist_squared =
-            self.radius * self.radius - dist_from_center_to_ray_squared;
+        let p_to_surf_dist_squared = self.radius * self.radius - dist_from_center_to_ray_squared;
         if p_to_surf_dist_squared < 0.0 {
             return None;
         }
@@ -33,7 +32,11 @@ impl Shape for Sphere {
         if result < EPSILON {
             result = orig_to_p_dist + p_to_surf_dist;
         }
-        if result < EPSILON { None } else { Some(result) }
+        if result < EPSILON {
+            None
+        } else {
+            Some(result)
+        }
     }
 
     fn normal_at(&self, point: Vec3f) -> Vec3f {

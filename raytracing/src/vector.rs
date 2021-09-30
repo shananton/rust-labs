@@ -1,5 +1,5 @@
-use std::ops::{Add, Sub, Mul, Div, Neg};
 use std::fmt::{Display, Formatter};
+use std::ops::{Add, Div, Mul, Neg, Sub};
 
 pub type Float = f32;
 pub const EPSILON: Float = 1e-3;

@@ -1,5 +1,5 @@
-pub mod material;
 pub mod ball;
+pub mod material;
 pub mod plane;
 
 pub use ball::*;

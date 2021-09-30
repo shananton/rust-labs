@@ -1,8 +1,8 @@
-pub mod sphere;
 pub mod ray;
+pub mod sphere;
 
-pub use sphere::*;
 pub use ray::*;
+pub use sphere::*;
 
 use crate::vector::{Float, Vec3f};
 

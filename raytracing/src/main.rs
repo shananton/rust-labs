@@ -1,25 +1,79 @@
 use image::{ImageBuffer, Rgb};
 use raytracing::geometry::Sphere;
 use raytracing::pixmap::Pixmap;
+use raytracing::render::object::{Albedo, Ball, HorizontalCheckerboardFragment, Material};
 use raytracing::render::scene::camera::Camera;
-use raytracing::render::object::{Ball, Material, Albedo, HorizontalCheckerboardFragment};
-use raytracing::vector::Vec3f;
-use raytracing::render::scene::Scene;
 use raytracing::render::scene::light::Light;
+use raytracing::render::scene::Scene;
+use raytracing::vector::Vec3f;
 
-static IVORY: Material = Material::new(Vec3f::new(0.4, 0.4, 0.3), 50.0, 1.0,
-                                       Albedo { diffuse: 0.6, specular: 0.3, reflect: 0.1, refract: 0.0 });
-static GLASS: Material = Material::new(Vec3f::new(0.6, 0.7, 0.8), 125.0, 1.5,
-                                       Albedo { diffuse: 0.0, specular: 0.5, reflect: 0.1, refract: 0.8 });
-static RED_RUBBER: Material = Material::new(Vec3f::new(0.3, 0.1, 0.1), 10.0, 1.0,
-                                            Albedo { diffuse: 0.9, specular: 0.1, reflect: 0.0, refract: 0.0 });
-static MIRROR: Material = Material::new(Vec3f::new(1.0, 1.0, 1.0), 1425.0, 1.0,
-                                        Albedo { diffuse: 0.0, specular: 10.0, reflect: 0.8, refract: 0.0 });
+static IVORY: Material = Material::new(
+    Vec3f::new(0.4, 0.4, 0.3),
+    50.0,
+    1.0,
+    Albedo {
+        diffuse: 0.6,
+        specular: 0.3,
+        reflect: 0.1,
+        refract: 0.0,
+    },
+);
+static GLASS: Material = Material::new(
+    Vec3f::new(0.6, 0.7, 0.8),
+    125.0,
+    1.5,
+    Albedo {
+        diffuse: 0.0,
+        specular: 0.5,
+        reflect: 0.1,
+        refract: 0.8,
+    },
+);
+static RED_RUBBER: Material = Material::new(
+    Vec3f::new(0.3, 0.1, 0.1),
+    10.0,
+    1.0,
+    Albedo {
+        diffuse: 0.9,
+        specular: 0.1,
+        reflect: 0.0,
+        refract: 0.0,
+    },
+);
+static MIRROR: Material = Material::new(
+    Vec3f::new(1.0, 1.0, 1.0),
+    1425.0,
+    1.0,
+    Albedo {
+        diffuse: 0.0,
+        specular: 10.0,
+        reflect: 0.8,
+        refract: 0.0,
+    },
+);
 
-static BLUE_TILE: Material = Material::new(Vec3f::new(0.2, 0.2, 0.4), 10.0, 1.0,
-                                           Albedo { diffuse: 0.5, specular: 0.3, reflect: 0.5, refract: 0.0 });
-static GREEN_TILE: Material = Material::new(Vec3f::new(0.2, 0.4, 0.2), 10.0, 1.0,
-                                           Albedo { diffuse: 0.5, specular: 0.3, reflect: 0.5, refract: 0.0 });
+static BLUE_TILE: Material = Material::new(
+    Vec3f::new(0.2, 0.2, 0.4),
+    10.0,
+    1.0,
+    Albedo {
+        diffuse: 0.5,
+        specular: 0.3,
+        reflect: 0.5,
+        refract: 0.0,
+    },
+);
+static GREEN_TILE: Material = Material::new(
+    Vec3f::new(0.2, 0.4, 0.2),
+    10.0,
+    1.0,
+    Albedo {
+        diffuse: 0.5,
+        specular: 0.3,
+        reflect: 0.5,
+        refract: 0.0,
+    },
+);
 
 fn main() {
     let balls = vec![
@@ -42,17 +96,24 @@ fn main() {
     let mut scene = Scene::new(background_color, camera, 4);
     balls.into_iter().for_each(|b| scene.add_ball(b));
     lights.into_iter().for_each(|l| scene.add_light(l));
-    scene.add_checkerboard_fragment(HorizontalCheckerboardFragment::new(-5.0, 4.0, true, &GREEN_TILE));
-    scene.add_checkerboard_fragment(HorizontalCheckerboardFragment::new(-5.0, 4.0, false, &BLUE_TILE));
-
+    scene.add_checkerboard_fragment(HorizontalCheckerboardFragment::new(
+        -5.0,
+        4.0,
+        true,
+        &GREEN_TILE,
+    ));
+    scene.add_checkerboard_fragment(HorizontalCheckerboardFragment::new(
+        -5.0, 4.0, false, &BLUE_TILE,
+    ));
 
     let mut pixmap = Pixmap::new(width, height);
     for x in 0..width {
         for y in 0..height {
-            *pixmap.get_mut(x, y) =
-                scene.get_color_of_pixel(x, y);
+            *pixmap.get_mut(x, y) = scene.get_color_of_pixel(x, y);
         }
     }
     ImageBuffer::<Rgb<u8>, _>::from_raw(width as u32, height as u32, pixmap.bytes())
-        .unwrap().save("image.png").unwrap();
+        .unwrap()
+        .save("image.png")
+        .unwrap();
 }

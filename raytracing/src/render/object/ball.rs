@@ -1,7 +1,7 @@
 use crate::geometry;
+use crate::geometry::{Ray, Shape};
+use crate::render::object::{Material, SceneObject};
 use crate::vector::{Float, Vec3f};
-use crate::geometry::{Shape, Ray};
-use crate::render::object::{SceneObject, Material};
 
 pub struct Ball {
     shape: geometry::Sphere,

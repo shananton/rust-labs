@@ -7,7 +7,10 @@ pub struct Pixmap {
 
 impl Pixmap {
     pub fn new(cols: usize, rows: usize) -> Self {
-        Pixmap { data: vec![Default::default(); cols * rows], cols }
+        Pixmap {
+            data: vec![Default::default(); cols * rows],
+            cols,
+        }
     }
 
     pub fn bytes(&self) -> Vec<u8> {

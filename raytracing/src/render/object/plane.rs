@@ -1,6 +1,6 @@
-use crate::vector::{Vec3f, Float, EPSILON};
-use crate::geometry::{Shape, Ray};
-use crate::render::object::{SceneObject, Material};
+use crate::geometry::{Ray, Shape};
+use crate::render::object::{Material, SceneObject};
+use crate::vector::{Float, Vec3f, EPSILON};
 
 pub struct HorizontalCheckerboardFragment {
     y: Float,
@@ -11,7 +11,12 @@ pub struct HorizontalCheckerboardFragment {
 
 impl HorizontalCheckerboardFragment {
     pub fn new(z: Float, square_side: Float, is_even: bool, material: &'static Material) -> Self {
-        Self { y: z, square_side, is_even, material }
+        Self {
+            y: z,
+            square_side,
+            is_even,
+            material,
+        }
     }
 }
 
@@ -28,10 +33,16 @@ impl Shape for HorizontalCheckerboardFragment {
 
         let intersection_point = ray.origin() + dist_to_intersection * ray.direction_normalized();
 
-        let even_square = ((intersection_point.x / self.square_side).floor() as i32 +
-            (intersection_point.z / self.square_side).floor() as i32) % 2 == 0;
+        let even_square = ((intersection_point.x / self.square_side).floor() as i32
+            + (intersection_point.z / self.square_side).floor() as i32)
+            % 2
+            == 0;
 
-        if even_square == self.is_even { Some(dist_to_intersection) } else { None }
+        if even_square == self.is_even {
+            Some(dist_to_intersection)
+        } else {
+            None
+        }
     }
 
     fn normal_at(&self, _point: Vec3f) -> Vec3f {

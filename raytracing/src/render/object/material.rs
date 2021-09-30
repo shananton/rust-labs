@@ -1,4 +1,4 @@
-use crate::vector::{Vec3f, Float};
+use crate::vector::{Float, Vec3f};
 
 pub struct Material {
     diffuse_color: Vec3f,
@@ -15,9 +15,17 @@ pub struct Albedo {
 }
 
 impl Material {
-    pub const fn new(diffuse_color: Vec3f, specular_exponent: Float, refractive_index: Float, albedo: Albedo) -> Self {
+    pub const fn new(
+        diffuse_color: Vec3f,
+        specular_exponent: Float,
+        refractive_index: Float,
+        albedo: Albedo,
+    ) -> Self {
         Self {
-            diffuse_color, specular_exponent, refractive_index, albedo
+            diffuse_color,
+            specular_exponent,
+            refractive_index,
+            albedo,
         }
     }
 

@@ -7,7 +7,10 @@ pub struct Ray {
 
 impl Ray {
     pub fn new(origin: Vec3f, direction: Vec3f) -> Self {
-        Self { origin, direction_normalized: direction.normalized() }
+        Self {
+            origin,
+            direction_normalized: direction.normalized(),
+        }
     }
 
     pub fn origin(&self) -> Vec3f {
