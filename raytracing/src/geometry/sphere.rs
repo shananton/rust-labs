@@ -33,7 +33,7 @@ impl Shape for Sphere {
         if result < EPSILON {
             result = orig_to_p_dist + p_to_surf_dist;
         }
-        return if result < EPSILON { None } else { Some(result) }
+        if result < EPSILON { None } else { Some(result) }
     }
 
     fn normal_at(&self, point: Vec3f) -> Vec3f {

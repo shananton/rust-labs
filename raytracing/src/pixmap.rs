@@ -14,7 +14,7 @@ impl Pixmap {
         let mut result = vec![0; 3 * self.data.len()];
         let max_byte = u8::MAX as Float;
         for (i, v) in self.data.iter().enumerate() {
-            result[3 * i + 0] = (max_byte * v.x.clamp(0.0, 1.0)).round() as u8;
+            result[3 * i] = (max_byte * v.x.clamp(0.0, 1.0)).round() as u8;
             result[3 * i + 1] = (max_byte * v.y.clamp(0.0, 1.0)).round() as u8;
             result[3 * i + 2] = (max_byte * v.z.clamp(0.0, 1.0)).round() as u8;
         }

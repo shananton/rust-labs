@@ -26,6 +26,6 @@ impl Shape for Ball {
 
 impl SceneObject for Ball {
     fn material(&self) -> &Material {
-        &self.material
+        self.material
     }
 }

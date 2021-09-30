@@ -46,7 +46,7 @@ impl Scene {
         if remaining_depth == 0 {
             return self.background_color;
         }
-        match self.intersect_with_first_object(&ray) {
+        match self.intersect_with_first_object(ray) {
             None => { self.background_color }
             Some((dist, object)) => {
                 let material = object.material();
@@ -98,7 +98,7 @@ impl Scene {
     }
 
     fn intersect_with_type<'a, T: 'a + SceneObject>(&self, ray: &Ray, obj_iter: impl Iterator<Item=&'a T>) -> Option<(Float, &'a dyn SceneObject)> {
-        obj_iter.filter_map(|b| b.distance_to_intersection(&ray)
+        obj_iter.filter_map(|b| b.distance_to_intersection(ray)
             .map(|c| (c, b)))
             .min_by(|(c1, _), (c2, _)| c1.partial_cmp(c2).unwrap())
             .map(|(c, o)| (c, o as &dyn SceneObject))

@@ -1,7 +1,7 @@
-pub mod scene;
+pub mod r#impl;
 pub mod camera;
 pub mod light;
 
-pub use scene::*;
+pub use r#impl::*;
 pub use camera::*;
 pub use light::*;
