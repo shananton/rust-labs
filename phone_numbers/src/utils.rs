@@ -1,0 +1,1 @@
+pub const DIGITS: usize = 10;
